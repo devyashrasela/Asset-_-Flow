@@ -111,6 +111,12 @@ AuditItem.belongsTo(Asset, { foreignKey: 'asset_tag', targetKey: 'tag', as: 'Ass
 User.hasMany(AuditItem, { foreignKey: 'verified_by_user_id', onDelete: 'SET NULL' });
 AuditItem.belongsTo(User, { foreignKey: 'verified_by_user_id', as: 'VerifiedBy' });
 
+User.hasMany(AuditItem, { foreignKey: 'added_by', onDelete: 'SET NULL' });
+AuditItem.belongsTo(User, { foreignKey: 'added_by', as: 'AddedBy' });
+
+User.hasMany(AuditItem, { foreignKey: 'resolution_by', onDelete: 'SET NULL' });
+AuditItem.belongsTo(User, { foreignKey: 'resolution_by', as: 'ResolvedBy' });
+
 // 10. Transfer Requests (Plan: Asset_Transfers table)
 Organization.hasMany(TransferRequest, { foreignKey: 'organization_id', onDelete: 'CASCADE' });
 TransferRequest.belongsTo(Organization, { foreignKey: 'organization_id' });
