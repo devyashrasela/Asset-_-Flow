@@ -422,8 +422,8 @@ export const requestTransfer = async (req, res) => {
       return res.status(404).json({ error: 'Asset not found.' });
     }
 
-    if (asset.status !== 'Allocated' || !asset.current_holder_id) {
-      return res.status(400).json({ error: 'This asset is not currently allocated, hence cannot be transferred.' });
+    if (asset.status !== 'Allocated' && asset.status !== 'Available') {
+      return res.status(400).json({ error: 'This asset is not Available or Allocated, hence cannot be requested.' });
     }
 
     if (asset.current_holder_id === requested_new_holder_id) {
@@ -544,22 +544,24 @@ export const approveTransfer = async (req, res) => {
       transaction
     });
 
-    if (!asset || asset.status !== 'Allocated') {
+    if (!asset || (asset.status !== 'Allocated' && asset.status !== 'Available')) {
       request.status = 'Rejected';
       await request.save({ transaction });
       await transaction.commit();
-      return res.status(409).json({ error: 'Asset is no longer allocated. Transfer auto-rejected.' });
+      return res.status(409).json({ error: 'Asset is no longer Available or Allocated. Request auto-rejected.' });
     }
 
-    // Close current allocation
-    const activeAlloc = await Allocation.findOne({
-      where: { asset_tag: request.asset_tag, organization_id: orgId, status: 'Active' },
-      transaction
-    });
-    if (activeAlloc) {
-      activeAlloc.status = 'Returned';
-      activeAlloc.notes = 'Closed via approved transfer';
-      await activeAlloc.save({ transaction });
+    // Close current allocation if it was a transfer
+    if (asset.status === 'Allocated') {
+      const activeAlloc = await Allocation.findOne({
+        where: { asset_tag: request.asset_tag, organization_id: orgId, status: 'Active' },
+        transaction
+      });
+      if (activeAlloc) {
+        activeAlloc.status = 'Returned';
+        activeAlloc.notes = 'Closed via approved transfer';
+        await activeAlloc.save({ transaction });
+      }
     }
 
     // Create new allocation for new holder
@@ -569,10 +571,11 @@ export const approveTransfer = async (req, res) => {
       assigned_to_user_id: request.requested_new_holder_id,
       expected_return_date: null,
       status: 'Active',
-      notes: 'Received via approved transfer'
+      notes: asset.status === 'Allocated' ? 'Received via approved transfer' : 'Allocated via approved request'
     }, { transaction });
 
-    // Update asset holder (status stays Allocated)
+    // Update asset holder and status
+    asset.status = 'Allocated';
     asset.current_holder_id = request.requested_new_holder_id;
     await asset.save({ transaction });
 

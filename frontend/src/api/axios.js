@@ -71,7 +71,8 @@ api.interceptors.response.use(
       isRefreshing = true
 
       try {
-        const { data } = await axios.post('/api/auth/refresh', {}, { withCredentials: true })
+        const baseURL = import.meta.env.VITE_API_URL || '/api'
+        const { data } = await axios.post(`${baseURL}/auth/refresh`, {}, { withCredentials: true })
         const newToken = data.token
         
         useAuthStore.setState({ accessToken: newToken })
