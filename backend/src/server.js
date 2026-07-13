@@ -31,7 +31,7 @@ app.use((req, res, next) => {
 });
 
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://localhost:3000'],
+  origin: [process.env.FRONTEND_URL, 'http://localhost:3000'],
   credentials: true
 }));
 app.use(express.json());
@@ -65,7 +65,7 @@ export const syncDatabase = async () => {
     console.log('Syncing Sequelize models with MySQL Database...');
     await sequelize.sync();
     console.log('Sequelize database models synchronized successfully!');
-    
+
     // Start the scheduled background booking scheduler
     startBookingScheduler();
 
