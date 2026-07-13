@@ -122,7 +122,7 @@ export const listMembers = async (req, res) => {
       include: [
         {
           model: User,
-          attributes: ['id', 'name', 'email']
+          attributes: ['id', 'name', 'email', 'slack_user_id']
         },
         {
           model: Department,

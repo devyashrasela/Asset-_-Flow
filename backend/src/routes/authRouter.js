@@ -8,7 +8,8 @@ import {
   resetPassword,
   me,
   listWorkspaces,
-  selectWorkspace
+  selectWorkspace,
+  linkSlack
 } from '../controllers/authController.js';
 import { createOrg } from '../controllers/orgController.js';
 import { authenticateToken } from '../middleware/authMiddleware.js';
@@ -23,6 +24,7 @@ router.post('/logout', logout);
 router.post('/forgot-password', forgotPassword);
 router.post('/reset-password', resetPassword);
 router.get('/me', authenticateToken, me);
+router.post('/link-slack', authenticateToken, linkSlack);
 
 // Workspace endpoints mapped under /auth prefix to match API plan
 router.get('/workspaces', authenticateToken, listWorkspaces);

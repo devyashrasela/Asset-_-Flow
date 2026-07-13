@@ -22,6 +22,11 @@ const User = sequelize.define('User', {
   password_hash: {
     type: DataTypes.STRING,
     allowNull: false
+  },
+  slack_user_id: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    unique: true
   }
 }, {
   tableName: 'Users',

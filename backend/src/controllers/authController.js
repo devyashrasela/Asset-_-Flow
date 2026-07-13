@@ -314,3 +314,22 @@ export const selectWorkspace = async (req, res) => {
     return res.status(500).json({ error: 'Internal server error selecting workspace.' });
   }
 };
+
+export const linkSlack = async (req, res) => {
+  const { email, slack_user_id } = req.body;
+  if (!email || !slack_user_id) {
+    return res.status(400).json({ error: 'Email and slack_user_id are required.' });
+  }
+  try {
+    const user = await User.findOne({ where: { email } });
+    if (!user) {
+      return res.status(404).json({ error: 'User not found.' });
+    }
+    user.slack_user_id = slack_user_id;
+    await user.save();
+    return res.json({ message: 'Slack account linked successfully.', user: { id: user.id, email: user.email, slack_user_id } });
+  } catch (err) {
+    console.error('Error linking slack:', err);
+    return res.status(500).json({ error: 'Internal server error.' });
+  }
+};
